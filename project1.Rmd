@@ -1,0 +1,49 @@
+---
+title: "Course Project 1"
+author: "Charles Vuono"
+date: "June 29, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+###Introduction
+
+I did some stuff for this project
+
+###Loading and preprocessing the data
+
+We load the data from the file *activity.csv* using the R code:
+
+```{r}
+df<-read.csv("activity.csv", header=TRUE)
+```
+
+The data contains many NA values in the field *steps* which we will address later in this report. 
+
+###What is mean total number of steps taken per day?
+
+First we transform the data to find the total number of steps per day (leaving any day with a NA observation as NA so as not to skew the data). We accomplish this with the R code:
+
+```{r}
+dailyDF <- aggregate(df$steps, list(date=df$date), sum)
+colnames(dailyDF)<-c("date", "daily.steps")
+```
+
+Before calculating the mean and median of steps per day, we can investigate the distribution of steps per day by considering the frequency histogram of the daily steps data.
+
+```{r}
+hist(dailyDF$daily.steps, col="pink", xlab="Steps per Day", main="Frequency Histogram of Steps per Day")
+```
+
+To find the mean and median steps per day, we must ignore the NA values in the data and calculate the mean and median as:
+
+```{r}
+mean(dailyDF$daily.steps, na.rm=TRUE)
+median(dailyDF$daily.steps, na.rm=TRUE)
+```
+
+
+
