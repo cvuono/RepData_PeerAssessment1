@@ -7,9 +7,7 @@ output:
     keep_md: yes
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+
 
 ###Introduction
 
@@ -23,7 +21,8 @@ We investigate various conclusions on data as provided in the project assignment
 
 We load the data from the file *activity.csv* using the R code:
 
-```{r}
+
+```r
 df<-read.csv("activity.csv", header=TRUE)
 ```
 
@@ -33,47 +32,68 @@ The data contains many NA values in the field *steps* which we will address late
 
 First we transform the data to find the total number of steps per day (leaving any day with a NA observation as NA so as not to skew the data). We accomplish this with the R code:
 
-```{r}
+
+```r
 dailyDF <- aggregate(df$steps, list(date=df$date), sum)
 colnames(dailyDF)<-c("date", "daily.steps")
 ```
 
 Before calculating the mean and median of steps per day, we can investigate the distribution of steps per day by considering the frequency histogram of the daily steps data.
 
-```{r}
+
+```r
 hist(dailyDF$daily.steps, col="blue", xlab="Steps per Day", main="Frequency Histogram of Steps per Day")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
 To find the mean and median steps per day, we must ignore the NA values in the data and calculate the mean and median as:
 
-```{r}
+
+```r
 mean(dailyDF$daily.steps, na.rm=TRUE)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(dailyDF$daily.steps, na.rm=TRUE)
+```
+
+```
+## [1] 10765
 ```
 
 ###What is the average daily activity pattern?
 
 In order to see the average daily activity pattern, we transform the data to calculate the average number of steps for each interval using the R code
 
-```{r}
+
+```r
 averagedailyDF<-aggregate(df$steps, list(interval=df$interval), mean, na.rm=TRUE)
 colnames(averagedailyDF)<-c("interval", "average.steps")
 ```
 
 Having aggregated the interval data accross days, we can plot an average daily pattern:
 
-```{r}
+
+```r
 plot(averagedailyDF$average.steps~averagedailyDF$interval, 
      type="l", col="blue",
      main="Average Daily Activity", xlab="Time of Day", ylab="Steps per 5 minute interval")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+
 The maximum activity occurs in the interval determined by the following R code:
 
-```{r}
+
+```r
 maxinterval<-averagedailyDF$interval[which.max(averagedailyDF$average.steps)]
 ```
-The **maximum** average steps of **`r trunc(max(averagedailyDF$average.steps))`** occurs at the interval **`r maxinterval`**.
+The **maximum** average steps of **206** occurs at the interval **835**.
 
 
 ### Imputing missing values
@@ -82,16 +102,18 @@ As mentioned above, many of the intervals in our data have no data reported (i.e
 
 The number of such occurences is calculated as follows:
 
-```{r}
+
+```r
 nacount<-sum(complete.cases(df))
 percentna<-nacount/nrow(df)
 ```
 
-In total there are `r nacount` occurrences, which is `r trunc(100*percentna)`% of the data.
+In total there are 15264 occurrences, which is 86% of the data.
 
 We shall now transform our data so that the missing values are replaced with approximate values. We shall approximate the NA values using the mean for that five minute interval, which was already calculated and placed in *averagedailyDF$average.steps*. We accomplish this with the R code:
 
-```{r}
+
+```r
 augdf<-df
 for(i in 1:nrow(augdf)) {
   if(is.na(augdf$steps[i])){
@@ -104,7 +126,8 @@ for(i in 1:nrow(augdf)) {
 
 
 As above we can aggreagte our data to calculate the total steps per day from the augmented data:
-```{r}
+
+```r
 augdailyDF <- aggregate(augdf$steps, list(date=df$date), sum)
 colnames(augdailyDF)<-c("date", "daily.steps")
 ```
@@ -113,10 +136,27 @@ This augmented version of average daily steps per day will be more accurate sinc
 
 As before we can now create a frequency histogram of the augmented data set and calulate the mean and median as follows:
 
-```{r}
+
+```r
 hist(augdailyDF$daily.steps, col="blue", xlab="Steps per Day", main="Frequency Histogram of Steps per Day")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
+
+```r
 mean(augdailyDF$daily.steps)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(augdailyDF$daily.steps)
+```
+
+```
+## [1] 10766.19
 ```
 
 Note that for all calculations involing the augmented data set, we did not include `na.rm=TRUE` in any of the R code, since that was taken care of in the augmentation process. The equality of the mean and median in this case derives from the "median" day being a day in which all observations were NA. Similarly this augmentation method yields very similar results to the results where we ignored all days with a missing interval in the data. 
@@ -124,12 +164,14 @@ Note that for all calculations involing the augmented data set, we did not inclu
 ###Are there differences in activity patterns between weekdays and weekends?
 To determine any differences between weekdays and weekends, we first add  a weekday/weekend indiicator variable to the augmented data and then aggregate the data by that indicator accross intervals as follows:
 
-```{r warning=FALSE, message=FALSE, results="hide"}
+
+```r
 library(dplyr)
 library(lattice)
 ```
 
-```{r}
+
+```r
 dowdf<-augdf %>% mutate(DOW=weekdays(as.Date(date))) %>% 
               mutate( DOWtype=ifelse(DOW=="Saturday" | DOW=="Sunday","Weekend","Weekday"))
 dowavedailyDF<-aggregate(dowdf$steps, list(interval=dowdf$interval, DOWtype=dowdf$DOWtype), mean)
@@ -139,8 +181,9 @@ xyplot(average.steps~ interval | DOWtype, data=dowavedailyDF, type="l",
        main="Average steps by interval by Weekday/Weekend", 
        xlab="Interval", ylab="Average Steps per 5 minute interval",
        scales=list(alternating=FALSE))
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-13-1.png)<!-- -->
 
 THe graph shows that overall weekend activity levels are higher, although the maximum activity occurs on weekday mornings. 
 
